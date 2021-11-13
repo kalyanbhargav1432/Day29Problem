@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class CSVStateClass {
+public class CensusAnalyser {
 	public static void main(String[] args) {
 		String path = "E:\\CSVFile\\IndiaStateCensusData - IndiaStateCensusData.csv";
 		String line = "";
