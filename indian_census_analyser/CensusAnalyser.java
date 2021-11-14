@@ -1,27 +1,60 @@
 package indian_census_analyser;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.exceptions.CsvRuntimeException;
+
+import javax.management.RuntimeErrorException;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
 
 public class CensusAnalyser {
-	public static void main(String[] args) {
-		String path = "E:\\CSVFile\\IndiaStateCensusData - IndiaStateCensusData.csv";
-		String line = "";
+	public int loadIndiaCensusData(String csvFilepath) throws CensusAnalyserException {
 		try {
-
-			BufferedReader bufferReader = new BufferedReader(new FileReader(path));
-			while ((line = bufferReader.readLine()) != null) {
-				String[] values = line.split(",");
-				System.out.println("State:" + values[0] + ",Population:" + values[1] + ",AreaInSqKm:" + values[2]
-						+ ",DensityPerSqKm:" + values[3]);
+			Reader reader = Files.newBufferedReader(Paths.get(csvFilepath));
+			CsvToBean<IndiaCensusCsv> csvToBean = new CsvToBeanBuilder(reader).withType(IndiaCensusCsv.class)
+					.withIgnoreLeadingWhiteSpace(true).build();
+			Iterator<IndiaCensusCsv> censusCsvIterator = csvToBean.iterator();
+			int numOfEntries = 0;
+			while (censusCsvIterator.hasNext()) {
+				numOfEntries++;
+				IndiaCensusCsv censusData = censusCsvIterator.next();
 			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			return numOfEntries;
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new CensusAnalyserException(e.getMessage(),
+					CensusAnalyserException.ExceptionType.CENSUS_FILE_PROBLEM);
+		} catch (RuntimeErrorException e) {
+			throw new CensusAnalyserException(e.getMessage(), CensusAnalyserException.ExceptionType.WRONGFILEEXTENSION);
+		} catch (RuntimeException e) {
+			throw new CensusAnalyserException(e.getMessage(),
+					CensusAnalyserException.ExceptionType.CSV_FILE_INTERNAL_ISSUES);
+		}
+	}
+
+	public int loadStateCodeData(String csvFilepath) throws CensusAnalyserException {
+		try {
+			Reader reader = Files.newBufferedReader(Paths.get(csvFilepath));
+			CsvToBean<StateCodeCsv> csvToBean = new CsvToBeanBuilder(reader).withType(StateCodeCsv.class)
+					.withIgnoreLeadingWhiteSpace(true).build();
+			Iterator<StateCodeCsv> censusCsvIterator = csvToBean.iterator();
+			int numOfEntries = 0;
+			while (censusCsvIterator.hasNext()) {
+				numOfEntries++;
+				StateCodeCsv censusData = censusCsvIterator.next();
+			}
+			return numOfEntries;
+		} catch (IOException e) {
+			throw new CensusAnalyserException(e.getMessage(),
+					CensusAnalyserException.ExceptionType.CENSUS_FILE_PROBLEM);
+		} catch (RuntimeErrorException e) {
+			throw new CensusAnalyserException(e.getMessage(), CensusAnalyserException.ExceptionType.WRONGFILEEXTENSION);
+		} catch (RuntimeException e) {
+			throw new CensusAnalyserException(e.getMessage(),
+					CensusAnalyserException.ExceptionType.CSV_FILE_INTERNAL_ISSUES);
 		}
 	}
 }
