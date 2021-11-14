@@ -1,27 +1,32 @@
 package indian_census_analyser;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 
 public class CensusAnalyser {
-	public static void main(String[] args) {
-		String path = "E:\\CSVFile\\IndiaStateCensusData - IndiaStateCensusData.csv";
-		String line = "";
+	public int loadIndiaCensusData(String csvFilepath) throws CensusAnalyserException {
 		try {
-
-			BufferedReader bufferReader = new BufferedReader(new FileReader(path));
-			while ((line = bufferReader.readLine()) != null) {
-				String[] values = line.split(",");
-				System.out.println("State:" + values[0] + ",Population:" + values[1] + ",AreaInSqKm:" + values[2]
-						+ ",DensityPerSqKm:" + values[3]);
+			Reader reader = Files.newBufferedReader(Paths.get(csvFilepath));
+			CsvToBean<IndianCensusCsvFile> csvToBean = new CsvToBeanBuilder(reader).withType(IndianCensusCsvFile.class)
+					.withIgnoreLeadingWhiteSpace(true).build();
+			Iterator<IndianCensusCsvFile> censusCsvIterator = csvToBean.iterator();
+			int numOfEntries = 0;
+			while (censusCsvIterator.hasNext()) {
+				numOfEntries++;
+				IndianCensusCsvFile censusData = censusCsvIterator.next();
 			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			return numOfEntries;
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new CensusAnalyserException(e.getMessage(),
+					CensusAnalyserException.ExceptionType.CENSUS_FILE_PROBLEM);
+		} catch (RuntimeException e) {
+			throw new CensusAnalyserException(e.getMessage(),
+					CensusAnalyserException.ExceptionType.CSV_FILE_INTERNAL_ISSUES);
 		}
 	}
 }
